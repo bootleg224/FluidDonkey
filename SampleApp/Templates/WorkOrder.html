@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=" utf-8">
+    <title>Work Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            max-height: 100px;
+        }
+
+        .Company-info p {
+            margin: 0;
+        }
+
+        .Customer-info {
+            margin-bottom: 20px;
+        }
+
+        .items {
+            margin-bottom: 20px;
+        }
+
+            .items table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+                .items table th,
+                .items table td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                }
+
+                .items table th {
+                    text-align: left;
+                    background-color: #f2f2f2;
+                }
+
+        .subtotal {
+            margin-top: 20px;
+        }
+
+        .terms {
+            margin-bottom: 20px;
+        }
+
+        .signature {
+            margin-bottom: 20px;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .products table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .products table th,
+            .products table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            .products table th {
+                text-align: left;
+                background-color: #f2f2f2;
+            }
+
+            .products table tfoot th,
+            .products table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            tfoot tr {
+                text-align: left;
+                font-weight: bold
+            }
+    </style>
+
+</head>
+<body>
+    <div class=" header">
+        <div class=" logo">
+            <img src="https://cdn.ymaws.com/www.aamse.org/resource/resmgr/2017_conference/Advanced-Solutions-Internati.jpg">
+        </div>
+        <div class=" Company-info">
+            <p>Advanced Solutions International</p>
+            <p>One Bob Way<br/>Bobs World, Texas, 91111</p>
+        </div>
+    </div>
+    <hr/>
+    <div class=" Customer-info">
+        <h2>Customer Information</h2>
+        <p><strong>Name:</strong> {{ Customer.Name }}</p>
+        <p><strong>Address:</strong> {{ Customer.Address }}, {{ Customer.City }}, {{ Customer.State }} {{ Customer.ZipCode }}</p>
+        <p><strong>Email:</strong> {{ Customer.Email }}</p>
+    </div>
+    <hr/>
+    <div class=" items">
+        <h2>Work Order Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Recurring/One-Time</th>
+                    <th>Adjustment</th>
+                    <th>Line Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in Items %}
+
+                {% if item.RevenueStyleStr == "Fixed" %}
+                <tr>
+                    <td>{{ item.ProductName }}</td>
+                    <td>Fixed Price</td>
+                    <td>{{ item.Quantity | format_number: 0.0}} {% if item.QuantityStyleStr == "ByUserCount" %}users{% endif %}</td>
+                    <td>{{ item.RecurringStyleStr }}</td>
+                    <td>{{ item.Discount | format_number: "#,##0.00"}}</td>
+                    <td>{{ item.ComputedLinePrice | format_number: "#,##0.00"}} {{ DealInfo.Currency }}</td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td>{{ item.ProductName }}</td>
+                    <td>{{ item.UnitPrice | format_number: "#,##0.00;(#,##0.00)"}}</td>
+                    <td>{{ item.Quantity | format_number: 0.0}} {% if item.QuantityStyleStr == "ByUserCount" %}users{% endif %}</td>
+                    <td>{{ item.RecurringStyleStr }}</td>
+                    <td>{{ item.LineDiscount | format_number: "#,##0.00;(#,##0.00)"}}</td>
+                    <td>{{ item.ComputedLinePrice | format_number: "#,##0.00;(#,##0.00)"}} {{ DealInfo.Currency }}</td>
+                </tr>
+
+                {% endif %}
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">
+                    </td>
+                    <td>Annual Cost:</td>
+                    <td>{{ DealSummary.TotalRecurring | format_number: "#,##0.00;(#,##0.00)" }} {{ DealInfo.Currency }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                    </td>
+                    <td>First Year One-Time Cost:</td>
+                    <td>{{ DealSummary.TotalOneTime | format_number: "#,##0.00;(#,##0.00)" }} {{ DealInfo.Currency }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                    </td>
+                    <td>Other Adjustments:</td>
+                    <td>{{ DealSummary.ManualTotalDiscount | format_number: "#,##0.00;(#,##0.00)" }} {{ DealInfo.Currency }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                    </td>
+                    <td>Total Year One:</td>
+                    <td>{{ DealSummary.Total | format_number: "#,##0.00;(#,##0.00)" }} {{ DealInfo.Currency }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                    </td>
+                    <td>Per User Cost:</td>
+                    <td>{{ DealSummary.TotalRecurringForUserSpecificItems | format_number: "#,##0.00;(#,##0.00)" }} {{ DealInfo.Currency }}</td>
+                </tr>
+            </tfoot>
+        </table>    
+    </div>
+    <div class=" terms">
+        <p><strong>Terms and Conditions:</strong> {{ order.TermsAndConditions }}</p>
+    </div>
+    <div class=" signature">
+        <label for=" signature">Signature:</label>
+        <input type=" text" id=" signature" name=" signature">
+        <button>Submit</button>
+    </div>
+    <div class=" page-break"></div>
+    <div class=" products">
+        <h2>Products</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in Products %}
+                <tr>
+                    <td>{{ product.ProductName }}</td>
+                    <td>{{ product.Description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
